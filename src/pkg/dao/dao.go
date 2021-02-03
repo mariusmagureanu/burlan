@@ -12,6 +12,7 @@ type DAO struct {
 	dbSession *gorm.DB
 
 	userDao UserDao
+	groupDao GroupDao
 }
 
 func (dao *DAO) Init(dbPath string) error {
@@ -32,6 +33,7 @@ func (dao *DAO) Init(dbPath string) error {
 	dao.dbSession = db
 
 	dao.userDao = userDao{base: base{db: db}}
+	dao.groupDao = groupDao{base: base{db: db}}
 
 	return sqlDB.Ping()
 }
@@ -55,4 +57,8 @@ func (dao *DAO) Close() error {
 
 func (dao *DAO) Users() UserDao {
 	return dao.userDao
+}
+
+func (dao *DAO) Groups() GroupDao {
+	return dao.groupDao
 }

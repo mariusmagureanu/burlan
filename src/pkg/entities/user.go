@@ -7,8 +7,8 @@ import (
 // User defines a user which will send messages.
 type User struct {
 	gorm.Model
-	Name  string
-	Alias string
-	Email string
+	Name    string
+	Alias   string
+	Email   string
 	Friends []User `gorm:"many2many:user_friends"`
 }
