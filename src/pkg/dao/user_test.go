@@ -1,9 +1,11 @@
 package dao
 
 import (
-	"github.com/mariusmagureanu/burlan/src/pkg/entities"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/mariusmagureanu/burlan/src/pkg/entities"
 )
 
 func TestUserDao_Insert(t *testing.T) {

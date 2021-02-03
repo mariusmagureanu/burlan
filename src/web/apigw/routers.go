@@ -1,4 +1,4 @@
-package web
+package main
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Foo(w http.ResponseWriter, r *http.Request) {
+func foo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	title := vars["title"]
 	page := vars["page"]
