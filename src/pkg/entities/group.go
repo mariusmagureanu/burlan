@@ -9,5 +9,5 @@ import (
 type Group struct {
 	gorm.Model
 	Name  string
-	Users []User
+	Users []User `gorm:"many2many:group_users;"`
 }
