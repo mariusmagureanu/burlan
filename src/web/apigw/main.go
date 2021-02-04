@@ -48,9 +48,14 @@ func main() {
 	db.CreateTables()
 
 	r := mux.NewRouter()
+	hub := newHub()
+	go hub.run()
 
 	r.HandleFunc(apiNameSpace+"user", createUser).Methods(http.MethodPost)
 	r.HandleFunc(apiNameSpace+"user/{id}", getUserByID).Methods(http.MethodGet)
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
 
 	_ = http.ListenAndServe(":8080", r)
 }
