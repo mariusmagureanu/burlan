@@ -33,6 +33,8 @@ var (
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
+
+	brokers []string
 )
 
 // Client is a middleman between the websocket connection and the hub.
@@ -149,7 +151,6 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	u, _, ok := r.BasicAuth()
 	if !ok {
 		log.Println("error parsing basic auth, attempt on query params")
-		//w.WriteHeader(401)
 	}
 
 	if u == "" {
@@ -170,7 +171,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	client := &Client{hub: hub, conn: conn, messages: make(chan []byte, 2<<8)}
 
 	mq := MQ{}
-	mq.Init(hub, u, []string{"localhost:9092"})
+	mq.Init(hub, u, brokers)
 
 	client.mq = &mq
 	client.uid = u
