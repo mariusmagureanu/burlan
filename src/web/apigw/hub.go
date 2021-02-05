@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"log"
+)
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -30,10 +35,16 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client.uid] = client
+			log.Println(fmt.Sprintf("connected client [%s]", client.uid))
 		case client := <-h.unregister:
 			if _, ok := h.clients[client.uid]; ok {
 				delete(h.clients, client.uid)
-				close(client.messages)
+				err := client.close()
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				log.Println(fmt.Sprintf("disconnected client [%s]", client.uid))
 			}
 		case message := <-h.broadcast:
 			for uid := range h.clients {
