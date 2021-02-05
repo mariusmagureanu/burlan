@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/mariusmagureanu/burlan/src/pkg/errors"
 	"github.com/segmentio/kafka-go"
 	"io"
-	"log"
 	"strings"
+
+	"github.com/mariusmagureanu/burlan/src/pkg/errors"
+	"github.com/mariusmagureanu/burlan/src/pkg/log"
 )
 
 type internalMessage struct {
@@ -56,7 +57,7 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 		}
 
 		if err != nil {
-			log.Println("could not read message " + err.Error())
+			log.Warning("could not read kafka message,", err.Error())
 			continue
 		}
 
@@ -73,15 +74,15 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 			err = json.Unmarshal(msg.Value, &im)
 
 			if err != nil {
-				log.Println("received invalid message format")
+				log.Warning("received invalid message format")
 				continue
 			}
 
-			dest.messages <- []byte(fmt.Sprintf("received message [%s] from [%s]", im.Text, im.From))
+			dest.messages <- []byte(fmt.Sprintf("received message <%s> from <%s>", im.Text, im.From))
 			err = mq.kafkaReader.CommitMessages(ctx, msg)
 
 			if err != nil {
-				log.Println("error when committing message:" + err.Error())
+				log.Error("error when committing message to kafka,", err.Error())
 			}
 		}
 	}
@@ -119,6 +120,6 @@ func (mq *MQ) writeToKafka(ctx context.Context, fromUID string, message []byte) 
 		return err
 	}
 
-	log.Println(fmt.Sprintf("sent message [%s] from [%s] to [%s]", im.Text, im.From, im.To))
+	log.Info(fmt.Sprintf("sent message <%s> from <%s> to <%s>", im.Text, im.From, im.To))
 	return nil
 }

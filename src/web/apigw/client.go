@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/mariusmagureanu/burlan/src/pkg/log"
 )
 
 const (
@@ -71,7 +71,7 @@ func (c *Client) readFromWebSocket(ctx context.Context) {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v\n", err)
+				log.Warning(err)
 			}
 			break
 		}
@@ -79,7 +79,7 @@ func (c *Client) readFromWebSocket(ctx context.Context) {
 		err = c.mq.writeToKafka(ctx, c.uid, message)
 
 		if err != nil {
-			log.Println("error writing to kafka:" + err.Error())
+			log.Error("could not write to kafka:", err.Error())
 		}
 
 		//dest.messages <- message
@@ -109,7 +109,7 @@ func (c *Client) writeToWebSocket() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Println("ws write error:" + err.Error())
+				log.Error("could not write to the websocket," + err.Error())
 				return
 			}
 			_, _ = w.Write(message)
@@ -122,7 +122,7 @@ func (c *Client) writeToWebSocket() {
 			}
 
 			if err := w.Close(); err != nil {
-				log.Println("ws close error:" + err.Error())
+				log.Error("could not close websocket," + err.Error())
 				return
 			}
 		case <-ticker.C:
@@ -150,21 +150,21 @@ func (c *Client) close() error {
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	u, _, ok := r.BasicAuth()
 	if !ok {
-		log.Println("error parsing basic auth, attempt on query params")
+		log.Warning("error parsing basic auth, attempt on query params")
 	}
 
 	if u == "" {
 		u = r.URL.Query().Get("user")
 
 		if u == "" {
-			log.Println("couldn't fetch a user, will stop registration now")
+			log.Warning("couldn't fetch a user, will stop registration now")
 			return
 		}
 	}
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("error when upgrading connection to ws:" + err.Error())
+		log.Error("error when upgrading connection to ws:" + err.Error())
 		return
 	}
 
