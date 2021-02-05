@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/segmentio/kafka-go"
 )
 
 const (
@@ -226,16 +226,24 @@ func (c *Client) close() error {
 
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	u, _, ok := r.BasicAuth()
+	if !ok {
+		log.Println("error parsing basic auth, attempt on query params")
+		//w.WriteHeader(401)
+	}
+
+	if u == "" {
+		u = r.URL.Query().Get("user")
+
+		if u == "" {
+			log.Println("couldn't fetch a user, will stop registration now")
+			return
+		}
+	}
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("error when upgrading connection to ws:" + err.Error())
-		return
-	}
-
-	u, _, ok := r.BasicAuth()
-	if !ok {
-		log.Println("error parsing basic auth")
-		w.WriteHeader(401)
 		return
 	}
 
