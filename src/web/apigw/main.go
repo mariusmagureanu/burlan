@@ -18,6 +18,8 @@ var (
 	db          = dao.DAO{}
 	commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	versionFlag = commandLine.Bool("V", false, "Show version and exit")
+	portFlag    = commandLine.Uint("port", uint(8080), "Port used by the http server")
+	hostFlag    = commandLine.String("host", "localhost", "Host for the http server")
 	version     = "N/A"
 	revision    = "N/A"
 )
@@ -57,5 +59,7 @@ func main() {
 		serveWs(hub, w, r)
 	})
 
-	_ = http.ListenAndServe(":8080", r)
+	addr := fmt.Sprintf("%s:%d", *hostFlag, *portFlag)
+	log.Println("Started listening on: [" + addr + "]")
+	log.Fatalln(http.ListenAndServe(addr, r))
 }
