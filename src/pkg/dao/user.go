@@ -2,6 +2,8 @@ package dao
 
 import (
 	"github.com/mariusmagureanu/burlan/src/pkg/entities"
+
+	"github.com/google/uuid"
 )
 
 type UserDao interface {
@@ -9,15 +11,23 @@ type UserDao interface {
 	Update(*entities.User) error
 	Delete(*entities.User) error
 	GetByID(*entities.User, uint) error
+	GetByName(*entities.User, string) error
+	GetByUID(*entities.User, string) error
 	AddFriend(uint, uint) error
 	RemoveFriend(uint, uint) error
+	GetAll(*[]entities.User) error
 }
 
 type userDao struct {
 	base
 }
 
+func (ud userDao) GetAll(users *[]entities.User) error {
+	return ud.db.Find(users).Error
+}
+
 func (ud userDao) Insert(u *entities.User) error {
+	u.UID = uuid.NewString()
 	return ud.db.Create(u).Error
 }
 
@@ -32,6 +42,15 @@ func (ud userDao) Delete(u *entities.User) error {
 func (ud userDao) GetByID(u *entities.User, userID uint) error {
 	return ud.db.Preload("Friends").First(u, userID).Error
 }
+
+func (ud userDao) GetByName(u *entities.User, userName string) error {
+	return ud.db.Preload("Friends").Where("name=?", userName).First(u).Error
+}
+
+func (ud userDao) GetByUID(u *entities.User, uid string) error {
+	return ud.db.Preload("Friends").Where("uid=?", uid).First(u).Error
+}
+
 
 func (ud userDao) AddFriend(userId uint, friendId uint) error {
 	var (

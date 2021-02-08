@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mariusmagureanu/burlan/src/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -49,10 +50,61 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func login(w http.ResponseWriter, r *http.Request) {
+	u := mux.Vars(r)["name"]
+	var user entities.User
+
+	err := db.Users().GetByName(&user, u)
+
+	if err != nil {
+		log.Error(err.Error())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	token, err := jwtWrapper.GenerateToken(user.UID, user.Name, user.Email)
+
+	if err != nil {
+		log.Warning(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("X-JWT", token)
+}
+
 func updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
+}
+
+func getAllUsers(w http.ResponseWriter, r *http.Request) {
+	var users []entities.User
+
+	err := db.Users().GetAll(&users)
+
+	if err != nil {
+		log.Error("db", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	out, err := json.Marshal(users)
+
+	if err != nil {
+		log.Error("json", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "http://localhost:8081")
+	//w.Header().Add("Access-Control-Request-Headers", "Content-Type")
+	w.Header().Add("Access-Control-Request-Method", "GET")
+
+
+	w.Write(out)
 }
 
 func getUserByID(w http.ResponseWriter, r *http.Request) {

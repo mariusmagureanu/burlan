@@ -1,2 +1,4 @@
-github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
-github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
+github.com/mariusmagureanu/burlan/src/pkg/errors v0.0.0-20210208095453-e0713562b900 h1:TuRhzEvM03ewPRVi1rgIjTb+hMGUsUQsFVRXzI4aP38=
+github.com/mariusmagureanu/burlan/src/pkg/errors v0.0.0-20210208095453-e0713562b900/go.mod h1:J9mC74i8MnupHW/CN/ADEpBr5e6WWf8L6h4ZeHVhWX0=

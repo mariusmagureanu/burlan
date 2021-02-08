@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/mariusmagureanu/burlan/src/pkg/auth"
 	"net/http"
 	"time"
 
@@ -39,17 +40,11 @@ var (
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
-
-	// The websocket connection.
-	conn *websocket.Conn
-
-	// Buffered channel of outbound messages.
+	hub      *Hub
+	mq       *MQ
+	conn     *websocket.Conn
 	messages chan []byte
-
-	mq *MQ
-
-	uid string
+	uid      string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -57,7 +52,7 @@ type Client struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readFromWebSocket(ctx context.Context) {
+func (c *Client) readFromWebSocket(ctx context.Context, claim *auth.JwtClaim) {
 	defer func() {
 		c.hub.unregister <- c
 		_ = c.conn.Close()
@@ -68,6 +63,12 @@ func (c *Client) readFromWebSocket(ctx context.Context) {
 	c.conn.SetPongHandler(func(string) error { _ = c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	for {
+		err := claim.Valid()
+		if err != nil {
+			log.Warning("claim error while reading ws, ", err.Error())
+			break
+		}
+
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -77,11 +78,9 @@ func (c *Client) readFromWebSocket(ctx context.Context) {
 		}
 
 		err = c.mq.writeToKafka(ctx, c.uid, message)
-
 		if err != nil {
 			log.Error("could not write to kafka:", err.Error())
 		}
-
 		//dest.messages <- message
 	}
 }
@@ -148,19 +147,23 @@ func (c *Client) close() error {
 
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	u, _, ok := r.BasicAuth()
-	if !ok {
-		log.Warning("error parsing basic auth, attempt on query params")
+
+	authToken := r.Header.Get("X-JWT")
+
+	if authToken == "" {
+		log.Warning("jwt not provided, request will not continue")
+		w.WriteHeader(http.StatusForbidden)
+		return
 	}
 
-	if u == "" {
-		u = r.URL.Query().Get("user")
+	claim, err := jwtWrapper.ValidateToken(authToken)
 
-		if u == "" {
-			log.Warning("couldn't fetch a user, will stop registration now")
-			return
-		}
+	if err != nil {
+		log.Warning("invalid jwt ", err.Error())
+		w.WriteHeader(http.StatusForbidden)
+		return
 	}
+
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -171,13 +174,13 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	client := &Client{hub: hub, conn: conn, messages: make(chan []byte, 2<<8)}
 
 	mq := MQ{}
-	mq.Init(hub, u, brokers)
+	mq.Init(hub, claim.ClientUID, brokers)
 
 	client.mq = &mq
-	client.uid = u
+	client.uid = claim.ClientUID
 	client.hub.register <- client
 
 	go client.writeToWebSocket()
-	go client.readFromWebSocket(context.Background())
-	go client.mq.readFromKafka(context.Background(), u)
+	go client.readFromWebSocket(context.Background(), claim)
+	go client.mq.readFromKafka(context.Background(), claim.ClientUID)
 }

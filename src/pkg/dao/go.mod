@@ -4,6 +4,8 @@ go 1.15
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/google/uuid v1.2.0
 	github.com/mariusmagureanu/burlan/src/pkg/entities v0.0.0-00010101000000-000000000000
 	github.com/mattn/go-sqlite3 v1.14.6 // indirect
 	github.com/stretchr/testify v1.7.0

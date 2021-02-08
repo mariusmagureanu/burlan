@@ -49,7 +49,6 @@ func (h *Hub) run() {
 			}
 		case message := <-h.broadcast:
 			for uid := range h.clients {
-
 				select {
 				case h.clients[uid].messages <- message:
 				default:

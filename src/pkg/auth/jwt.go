@@ -2,8 +2,8 @@ package auth
 
 import (
 	jwt "github.com/dgrijalva/jwt-go"
-
 	"github.com/mariusmagureanu/burlan/src/pkg/errors"
+
 	"time"
 )
 
@@ -34,7 +34,7 @@ func (j *JwtWrapper) GenerateToken(uid, name, email string) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 
 	return token.SignedString([]byte(j.SecretKey))
 }

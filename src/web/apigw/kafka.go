@@ -1,16 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/mariusmagureanu/burlan/src/pkg/log"
 	"github.com/segmentio/kafka-go"
 	"io"
-	"strings"
-
-	"github.com/mariusmagureanu/burlan/src/pkg/errors"
-	"github.com/mariusmagureanu/burlan/src/pkg/log"
 )
 
 type internalMessage struct {
@@ -90,21 +86,23 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 
 func (mq *MQ) writeToKafka(ctx context.Context, fromUID string, message []byte) error {
 
-	message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+	//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+
 	msg := kafka.Message{}
 
 	// we'll need this later for broadcasting to groups
 	//c.hub.broadcast <- message
+	var im internalMessage
 
-	payload := strings.Split(string(message), ",")
-	if len(payload) != 2 {
-		return errors.ErrWSInvalidFormat
+	//tmpMsg := fmt.Sprintf("%s", message)
+
+	err := json.Unmarshal(message, &im)
+	if err != nil {
+		log.Error("unmarshalling error:", err.Error())
+		return err
 	}
 
-	im := internalMessage{}
 	im.From = fromUID
-	im.To = payload[0]
-	im.Text = payload[1]
 
 	imPayload, err := json.Marshal(im)
 	if err != nil {
