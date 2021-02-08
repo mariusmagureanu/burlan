@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/mariusmagureanu/burlan/src/pkg/log"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the
@@ -35,16 +36,16 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client.uid] = client
-			log.Println(fmt.Sprintf("connected client [%s]", client.uid))
+			log.Info(fmt.Sprintf("connected client <%s>", client.uid))
 		case client := <-h.unregister:
 			if _, ok := h.clients[client.uid]; ok {
 				delete(h.clients, client.uid)
 				err := client.close()
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					continue
 				}
-				log.Println(fmt.Sprintf("disconnected client [%s]", client.uid))
+				log.Info(fmt.Sprintf("disconnected client <%s>", client.uid))
 			}
 		case message := <-h.broadcast:
 			for uid := range h.clients {
