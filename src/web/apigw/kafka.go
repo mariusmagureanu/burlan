@@ -61,7 +61,9 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 		// in its own group, so it's (I guess) guaranteed that each message
 		// reaches the correct destination.
 		destClientKey := string(msg.Key)
+		log.Debug("got message,", string(msg.Value))
 		if destClientKey != toUID {
+			log.Error("waat??", destClientKey, toUID)
 			continue
 		}
 
@@ -74,7 +76,7 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 				continue
 			}
 
-			dest.messages <- []byte(fmt.Sprintf("received message <%s> from <%s>", im.Text, im.From))
+			dest.messages <- msg.Value
 			err = mq.kafkaReader.CommitMessages(ctx, msg)
 
 			if err != nil {
@@ -89,6 +91,7 @@ func (mq *MQ) writeToKafka(ctx context.Context, fromUID string, message []byte) 
 	//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 
 	msg := kafka.Message{}
+	fmt.Println(fmt.Sprintf("%s", message))
 
 	// we'll need this later for broadcasting to groups
 	//c.hub.broadcast <- message

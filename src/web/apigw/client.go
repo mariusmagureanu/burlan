@@ -99,6 +99,7 @@ func (c *Client) writeToWebSocket() {
 	for {
 		select {
 		case message, ok := <-c.messages:
+			log.Debug("writing message to websocket:", string(message))
 			err := c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -149,6 +150,10 @@ func (c *Client) close() error {
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	authToken := r.Header.Get("X-JWT")
+
+	if authToken == "" {
+		authToken = r.URL.Query().Get("jwt")
+	}
 
 	if authToken == "" {
 		log.Warning("jwt not provided, request will not continue")

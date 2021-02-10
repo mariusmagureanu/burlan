@@ -13,6 +13,18 @@ import (
 	"github.com/mariusmagureanu/burlan/src/pkg/entities"
 )
 
+func reqWrapper(fn func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-type", "application/json")
+		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:8081")
+		w.Header().Add("Access-Control-Request-Method", "GET")
+		w.Header().Add("Access-Control-Expose-Headers", "X-Jwt")
+
+		log.Debug(r.Method, "", r.URL.RequestURI())
+		fn(w,r)
+	}
+}
 func createUser(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Content-Type")
 
@@ -20,7 +32,6 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
-
 	body, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
@@ -70,6 +81,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	w.Header().Set("X-JWT", token)
 }
 
@@ -97,12 +109,6 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Add("Content-type", "application/json")
-	w.Header().Add("Access-Control-Allow-Origin", "http://localhost:8081")
-	//w.Header().Add("Access-Control-Request-Headers", "Content-Type")
-	w.Header().Add("Access-Control-Request-Method", "GET")
-
 
 	w.Write(out)
 }

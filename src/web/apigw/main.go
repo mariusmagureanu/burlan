@@ -53,8 +53,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.InitNewLogger(os.Stdout, log.ErrorLevel)
-	log.SetLogLevel(log.GetLogLevelID(*logLevelFlag))
+	log.InitNewLogger(os.Stdout, log.GetLogLevelID(*logLevelFlag))
 
 	jwtWrapper.SecretKey = rsaKey
 	jwtWrapper.ExpirationHours = *jwtExpirationTime
@@ -84,10 +83,10 @@ func main() {
 	hub := newHub()
 	go hub.run()
 
-	r.HandleFunc(apiNameSpace+"users", getAllUsers).Methods(http.MethodGet,http.MethodOptions)
-	r.HandleFunc(apiNameSpace+"user", createUser).Methods(http.MethodPost)
-	r.HandleFunc(apiNameSpace+"user/{id}", getUserByID).Methods(http.MethodGet)
-	r.HandleFunc(apiNameSpace+"login/{name}", login).Methods(http.MethodPost)
+	r.HandleFunc(apiNameSpace+"users", reqWrapper(getAllUsers)).Methods(http.MethodGet,http.MethodOptions)
+	r.HandleFunc(apiNameSpace+"user", reqWrapper(createUser)).Methods(http.MethodPost)
+	r.HandleFunc(apiNameSpace+"user/{id}", reqWrapper(getUserByID)).Methods(http.MethodGet)
+	r.HandleFunc(apiNameSpace+"login/{name}", reqWrapper(login)).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
