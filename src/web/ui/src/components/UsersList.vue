@@ -35,10 +35,9 @@
             </ul>
         </div>
         <div class="right-section">
-            <div style="overflow-y:scroll;" class="message mCustomScrollbar" data-mcs-theme="minimal-dark">
+            <div style="overflow-y:auto;" class="message mCustomScrollbar" data-mcs-theme="minimal-dark">
                 <ul>
                     <li class="msg-day"><small>Wednesday</small></li>
-
                     <li v-for="item in messages[selectedUser.UID]" :key="item.Key" :class="item.Local ? 'msg-right' : 'msg-left' ">
                         <div class="msg-left-sub">
                             <img  v-if="item.Local" src="../assets/message-blue-icon.png">
@@ -88,7 +87,7 @@ name: 'user-table',
     }
   },
   mounted() {
-   this.getUsers()
+    this.getUsers()
 
     var token = localStorage.getItem('user-token')
 	this.connection = new WebSocket('ws://localhost:8080/ws?jwt='+token);
@@ -123,9 +122,11 @@ name: 'user-table',
 	  this.msgTxt=""
 	},
     setActive(user, index) {
+		console.log(user,index)
+
         this.activeIndex = index;
         this.selectedUser = user;
-        this.selectedUser.ID = user.ID;
+		this.selectedUser.ID = user.ID;		
   },
     addMessage(toAdd) {
 		var msg = JSON.parse(toAdd.data)
@@ -137,6 +138,7 @@ name: 'user-table',
 	   msg["Key"] = this.random()
 	   msg["Timestamp"] = new Date().toLocaleTimeString()
 	   this.messages[msg.From].push(msg)
+	   this.$forceUpdate();
 	},
   async getUsers() {
         try {
@@ -144,7 +146,9 @@ name: 'user-table',
            method: 'GET',
           })
           const data = await response.json()
-		  this.users = data			
+		  this.users = data		
+     	  this.setActive(this.users[0], 0)
+	
         } catch (error) {
           console.error(error)
         }

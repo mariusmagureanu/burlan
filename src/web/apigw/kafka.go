@@ -63,7 +63,6 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 		destClientKey := string(msg.Key)
 		log.Debug("got message,", string(msg.Value))
 		if destClientKey != toUID {
-			log.Error("waat??", destClientKey, toUID)
 			continue
 		}
 
