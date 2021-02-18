@@ -20,16 +20,17 @@
         },
         methods: {
             async login() {
-                if(this.input.username != "" && this.input.password != "") {
+                if(this.input.username != "") {
                     const response = await fetch('http://localhost:8080/api/v1/login/'+this.input.username, {
                                method: 'POST',
                               })
 
                     const data = await response.headers.get('X-Jwt')
-                    console.log(data)
-
+                 
                     if(response.status == 200) {
                         localStorage.setItem('user-token', data)
+                        localStorage.setItem('user-name', this.input.username)
+
                         this.$emit("authenticated", true);
                         this.$router.replace({ name: "users" });
                     } else {

@@ -22,8 +22,11 @@
                 <li v-for="(user, index) in users" :class="{ 'active': activeIndex === index }" :key="user.ID" @click="setActive(user, index)">
                        <div class="chatList">
                             <div class="img">
-                                <i class="fa fa-circle"></i>
-                                    <img src="../assets/person.png">
+                                <i ></i>
+
+                                    <img v-if="user.Name == loggedInUserName" src="../assets/MediumDemon.png">
+									<img  v-else src="../assets/person.png">
+
                             </div>
                             <div class="desc">
                                 <small class="time">{{ user.Name }}</small>
@@ -76,9 +79,11 @@ name: 'user-table',
 	users: []
 	activeIndex: 0
 	msgTxt: ""
+	loggedInUserName: ""
     return {
 	  users: [],
 	  messages: {},
+	  loggedInUserName: "",
       isActive: false,
 	  activeIndex: 0,
 	  msgTxt: "",
@@ -147,7 +152,8 @@ name: 'user-table',
           })
           const data = await response.json()
 		  this.users = data		
-     	  this.setActive(this.users[0], 0)
+		  this.setActive(this.users[0], 0)
+		  this.loggedInUserName = localStorage.getItem('user-name') 
 	
         } catch (error) {
           console.error(error)
