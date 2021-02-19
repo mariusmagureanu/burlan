@@ -17,7 +17,7 @@ lint:
 
 build:
 	@go generate
-	@go build --buildmode=pie -o bin/api-gw -ldflags "-s -w -X main.revision=${REVISION} -X main.version=${VERSION}"
+	@GOOS=linux GOARCH=amd64 go build -o bin/api-gw -ldflags "-s -w -X main.revision=${REVISION} -X main.version=${VERSION}"
 
 osxbuild:
 	@go generate

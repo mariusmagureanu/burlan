@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -83,7 +84,7 @@ func main() {
 	hub := newHub()
 	go hub.run()
 
-	r.HandleFunc(apiNameSpace+"users", reqWrapper(getAllUsers)).Methods(http.MethodGet,http.MethodOptions)
+	r.HandleFunc(apiNameSpace+"user", reqWrapper(getAllUsers)).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc(apiNameSpace+"user", reqWrapper(createUser)).Methods(http.MethodPost)
 	r.HandleFunc(apiNameSpace+"user/{id}", reqWrapper(getUserByID)).Methods(http.MethodGet)
 	r.HandleFunc(apiNameSpace+"login/{name}", reqWrapper(login)).Methods(http.MethodPost, http.MethodOptions)
@@ -93,7 +94,13 @@ func main() {
 
 	brokers = strings.Split(*brokersFlag, ",")
 	addr := fmt.Sprintf("%s:%d", *hostFlag, *portFlag)
+	server := &http.Server{Handler: r}
+	l, err := net.Listen("tcp4", addr)
+	if err != nil {
+		log.ErrorSync(err)
+		os.Exit(1)
+	}
 
 	log.InfoSync(fmt.Sprintf("Started listening on: <%s>", addr))
-	log.ErrorSync(http.ListenAndServe(addr, r))
+	log.ErrorSync(server.Serve(l))
 }
