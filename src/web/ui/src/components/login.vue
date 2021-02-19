@@ -32,7 +32,7 @@
                         localStorage.setItem('user-name', this.input.username)
 
                         this.$emit("authenticated", true);
-                        this.$router.replace({ name: "users" });
+                        this.$router.replace({ name: "messaging" });
                     } else {
                         console.log("The username and / or password is incorrect");
                     }

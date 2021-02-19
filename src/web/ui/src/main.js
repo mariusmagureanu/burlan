@@ -3,12 +3,11 @@ import Vue from 'vue'
 import App from './App.vue'
 
 import LoginComponent from "./components/login.vue"
-import SecureComponent from "./components/secure.vue"
-import UsersList from "./components/UsersList.vue"
+import messaging from "./components/messaging.vue"
+
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
-
 
 new Vue({
 router: new VueRouter({
@@ -25,14 +24,9 @@ router: new VueRouter({
                     component: LoginComponent
                 },
                 {
-                    path: "/secure",
-                    name: "secure",
-                    component: SecureComponent
-                },
-                {
-                    path: "/users",
-                    name: "users",
-                    component: UsersList
+                    path: "/messaging",
+                    name: "messaging",
+                    component: messaging
                 }
             ]
         }),

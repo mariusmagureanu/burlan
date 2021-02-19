@@ -12,13 +12,13 @@
 </template>
 
 <script>
-import UsersList from '@/components/UsersList.vue'
+import messaging from '@/components/messaging.vue'
 import login from '@/components/login.vue'
 
 export default {
   name: "app",
   components: {
-    UsersList
+    messaging
   },
   data() {
     return {
@@ -40,59 +40,6 @@ export default {
          this.authenticated = false;  
          localStorage.removeItem('user-token')      
       },
-    async getEmployees() {
-      const myHeaders = new Headers();
-      myHeaders.append('Content-Type', 'application/json');
-      try {
-        const response = await fetch('http://localhost:8080/api/v1/users', {
-         method: 'GET',
-        })
-        const data = await response.json()
-        console.log(data)
-        this.employees = data
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    async addEmployee(employee) {
-      try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/users', {
-          method: 'POST',
-          body: JSON.stringify(employee),
-          headers: { "Content-type": "application/json; charset=UTF-8" }
-        })
-        const data = await response.json()
-        this.employees = [...this.employees, data]
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    async editEmployee(id, updatedEmployee) {
-      try {
-        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-          method: 'PUT',
-          body: JSON.stringify(updatedEmployee),
-          headers: { "Content-type": "application/json; charset=UTF-8" }
-        })
-        const data = await response.json()
-        this.employees = this.employees.map(employee => employee.id === id ? data : employee)
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    async deleteEmployee(id) {
-      try {
-        await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-          method: 'DELETE'
-        })
-        this.employees = this.employees.filter(employee => employee.id !== id)
-      } catch (error) {
-        console.error(error)
-      }
-    },
   },
 }
 </script>

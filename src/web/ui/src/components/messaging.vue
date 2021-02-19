@@ -73,7 +73,7 @@
 
 <script>
 export default {
-name: 'user-table',
+name: 'messaging',
   data() {
 	selectedUser: {}
 	users: []
