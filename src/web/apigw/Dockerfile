@@ -1,4 +1,8 @@
-FROM alpine:3.7
-COPY ./bin/api-gw ./
+FROM archlinux
+
+COPY ./apigw/bin/api-gw /
+
 EXPOSE 8080
-ENTRYPOINT ["./api-gw"]
+VOLUME /vsm
+
+CMD ["./api-gw"]
