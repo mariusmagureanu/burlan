@@ -21,18 +21,17 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 2 << 8
+	maxMessageSize = 2 << 12
 
 	messageTopic = "message-trip"
 )
 
 var (
 	newline = []byte{'\n'}
-	space   = []byte{' '}
 
 	upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+		ReadBufferSize:  2 << 11,
+		WriteBufferSize: 2 << 11,
 	}
 
 	brokers []string
@@ -73,10 +72,12 @@ func (c *Client) readFromWebSocket(ctx context.Context, claim *auth.JwtClaim) {
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Warning(err)
+			} else {
+				log.Error(err)
 			}
 			break
 		}
-
+		
 		err = c.mq.writeToKafka(ctx, c.uid, message)
 		if err != nil {
 			log.Error("could not write to kafka:", err.Error())
@@ -185,7 +186,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	client.uid = claim.ClientUID
 	client.hub.register <- client
 
+	go client.mq.readFromKafka(context.Background(), claim.ClientUID)
 	go client.writeToWebSocket()
 	go client.readFromWebSocket(context.Background(), claim)
-	go client.mq.readFromKafka(context.Background(), claim.ClientUID)
 }

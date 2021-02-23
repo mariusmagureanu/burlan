@@ -22,15 +22,20 @@ const (
 )
 
 var (
-	jwtWrapper        = auth.JwtWrapper{}
-	db                = dao.DAO{}
-	commandLine       = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	versionFlag       = commandLine.Bool("V", false, "Show version and exit")
-	portFlag          = commandLine.Uint("port", uint(8080), "Port used by the http server")
-	hostFlag          = commandLine.String("host", "localhost", "Host for the http server")
-	brokersFlag       = commandLine.String("brokers", "localhost:9092", "Kafka addresses separate by comma, if multiple specified")
-	logLevelFlag      = commandLine.String("log", "debug", "Available levels: debug,info,warning,error,quiet")
-	jwtExpirationTime = commandLine.Int64("jwt-exp", 24, "JWT expiration time expressed in hours")
+	jwtWrapper          = auth.JwtWrapper{}
+	db                  = dao.DAO{}
+	commandLine         = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	versionFlag         = commandLine.Bool("V", false, "Show version and exit")
+	portFlag            = commandLine.Uint("port", uint(8080), "Port used by the http server")
+	hostFlag            = commandLine.String("host", "localhost", "Host for the http server")
+	brokersFlag         = commandLine.String("brokers", "localhost:9092", "Kafka addresses separate by comma, if multiple specified")
+	logLevelFlag        = commandLine.String("log", "debug", "Available levels: debug,info,warning,error,quiet")
+	jwtExpirationTime   = commandLine.Int64("jwt-exp", 24, "JWT expiration time expressed in hours")
+	postgresHostFlag    = commandLine.String("db-host", "localhost", "Postgres host")
+	postgresPortFlag    = commandLine.Int("db-port", 5432, "Postgres port")
+	postgresUserFlag    = commandLine.String("db-user", "burlan", "Default database user")
+	postgresUserPwdFlag = commandLine.String("db-pwd", "", "Password for the database user")
+	postgresDbFlag      = commandLine.String("db-name", "burlan", "Default database name")
 
 	version  = "N/A"
 	revision = "N/A"
@@ -67,7 +72,9 @@ func main() {
 
 	jwtWrapper.Issuer = hostname
 
-	err = db.Init("foo.sqlite")
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d",
+		*postgresHostFlag, *postgresUserFlag, *postgresUserPwdFlag, *postgresDbFlag, *postgresPortFlag)
+	err = db.Init(dsn)
 
 	if err != nil {
 		log.ErrorSync(err)

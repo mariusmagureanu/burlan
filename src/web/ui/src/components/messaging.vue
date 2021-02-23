@@ -111,6 +111,10 @@ name: 'messaging',
 				},
 
 	myMethod: function myMethod(ev) {
+	  if (this.msgTxt === "") {
+        return
+    }
+
 	  var msg = {}
 	  msg["To"] = this.selectedUser.UID
 	  msg["Text"] = this.msgTxt

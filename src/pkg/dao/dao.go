@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"time"
 
@@ -16,7 +16,7 @@ type DAO struct {
 }
 
 func (dao *DAO) Init(dbPath string) error {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		return err
 	}

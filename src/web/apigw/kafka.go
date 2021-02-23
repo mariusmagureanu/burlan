@@ -24,12 +24,12 @@ type MQ struct {
 func (mq *MQ) Init(h *Hub, groupID string, brokers []string) {
 	mq.kafkaReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:     brokers,
-		Topic:       messageTopic,
+		Topic:       groupID,
 		StartOffset: kafka.LastOffset,
 		GroupID:     groupID,
 	})
 
-	mq.kafkaWriter = kafka.Writer{Addr: kafka.TCP(brokers...), Topic: messageTopic}
+	mq.kafkaWriter = kafka.Writer{Addr: kafka.TCP(brokers...)}
 
 	mq.hub = h
 }
@@ -63,6 +63,7 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 		destClientKey := string(msg.Key)
 		log.Debug("got message,", string(msg.Value))
 		if destClientKey != toUID {
+			log.Error("XXXX should really not hit this")
 			continue
 		}
 
@@ -86,17 +87,11 @@ func (mq *MQ) readFromKafka(ctx context.Context, toUID string) {
 }
 
 func (mq *MQ) writeToKafka(ctx context.Context, fromUID string, message []byte) error {
-
-	//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-
 	msg := kafka.Message{}
-	fmt.Println(fmt.Sprintf("%s", message))
 
 	// we'll need this later for broadcasting to groups
 	//c.hub.broadcast <- message
 	var im internalMessage
-
-	//tmpMsg := fmt.Sprintf("%s", message)
 
 	err := json.Unmarshal(message, &im)
 	if err != nil {
@@ -113,6 +108,7 @@ func (mq *MQ) writeToKafka(ctx context.Context, fromUID string, message []byte) 
 
 	msg.Value = imPayload
 	msg.Key = []byte(im.To)
+	msg.Topic = im.To
 
 	err = mq.kafkaWriter.WriteMessages(ctx, msg)
 
